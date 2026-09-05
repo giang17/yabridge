@@ -1317,8 +1317,7 @@ void Vst3Bridge::run() {
             [&](YaPluginFactory3::SetHostContext& request)
                 -> YaPluginFactory3::SetHostContext::Response {
                 // VST3 spec requires this to run on the UI thread.
-                return main_context_
-                    .run_in_context([&]() -> tresult {
+                return do_mutual_recursion_on_gui_thread([&]() -> tresult {
                         plugin_factory_host_context_ =
                             Steinberg::owned(new Vst3HostContextProxyImpl(
                                 *this,
@@ -1333,8 +1332,7 @@ void Vst3Bridge::run() {
                         return factory_3->setHostContext(
                             static_cast<YaHostApplication*>(
                                 plugin_factory_host_context_));
-                    })
-                    .get();
+                });
             },
             [&](const YaUnitInfo::GetUnitCount& request)
                 -> YaUnitInfo::GetUnitCount::Response {
